@@ -30,11 +30,15 @@ get_filename_component(YASM_EXE_PATH ${YASM} DIRECTORY)
 set(ENV{PATH} "$ENV{PATH};${YASM_EXE_PATH}")
 
 if(NOT VCPKG_CMAKE_SYSTEM_NAME OR VCPKG_CMAKE_SYSTEM_NAME STREQUAL "WindowsStore")
+    set(PATCHES_TO_APPLY "${CURRENT_PORT_DIR}/0002-fix-x86-build.patch")
+    if(VCPKG_CRT_LINKAGE STREQUAL static)
+        set(PATCHES_TO_APPLY "${CURRENT_PORT_DIR}/0001-fix-crt-linking.patch" ${PATCHES_TO_APPLY})
+    endif()
+
     vcpkg_apply_patches(
         SOURCE_PATH ${SOURCE_PATH}
-        PATCHES
-            "${CURRENT_PORT_DIR}/0001-fix-crt-linking.patch"
-            "${CURRENT_PORT_DIR}/0002-fix-x86-build.patch")
+        PATCHES ${PATCHES_TO_APPLY}
+    )
 
     vcpkg_build_msbuild(
         PROJECT_PATH ${SOURCE_PATH}/ports/MSVC++/2015/win32/libmpg123/libmpg123.vcxproj
