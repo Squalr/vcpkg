@@ -1,0 +1,25 @@
+From ec73462d831bad5a7165666e1dfcb59da897c4f7 Mon Sep 17 00:00:00 2001
+From: "Nathaniel R. Lewis" <linux.robotdude@gmail.com>
+Date: Sat, 2 Feb 2019 04:18:45 -0800
+Subject: [PATCH] remove force acceleration
+
+---
+ src/nsgl_context.m | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/nsgl_context.m b/src/nsgl_context.m
+index 22ebdba9..917a367e 100644
+--- a/src/nsgl_context.m
++++ b/src/nsgl_context.m
+@@ -164,7 +164,7 @@ GLFWbool _glfwCreateContextNSGL(_GLFWwindow* window,
+     // Arbitrary array size here
+     NSOpenGLPixelFormatAttribute attributes[40];
+ 
+-    ADD_ATTR(NSOpenGLPFAAccelerated);
++    //ADD_ATTR(NSOpenGLPFAAccelerated);
+     ADD_ATTR(NSOpenGLPFAClosestPolicy);
+ 
+ #if MAC_OS_X_VERSION_MAX_ALLOWED >= 101000
+-- 
+2.17.2 (Apple Git-113)
+

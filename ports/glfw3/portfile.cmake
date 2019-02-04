@@ -6,7 +6,7 @@ vcpkg_from_github(
     REF 3.2.1
     SHA512 c7921f993b9a99b3b9421fefadb039cd475c42d85f5b5a35d7c5401c70491349bb885a02fd31e527de06a8b40d9d49a1fdb92c964e13c04ae092c6b98eb491dc
     HEAD_REF master
-    PATCHES move-cmake-min-req.patch
+    PATCHES move-cmake-min-req.patch 0001-remove-force-acceleration.patch
 )
 
 if(VCPKG_CMAKE_SYSTEM_NAME AND NOT VCPKG_CMAKE_SYSTEM_NAME STREQUAL "WindowsStore")
