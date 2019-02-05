@@ -88,11 +88,21 @@ elseif(VCPKG_CMAKE_SYSTEM_NAME STREQUAL "Darwin" OR VCPKG_CMAKE_SYSTEM_NAME STRE
     file(REMOVE_RECURSE ${SOURCE_PATH}/build/release)
 
     ################
+    # EVIL HACKERY
+    ################
+    if(VCPKG_TARGET_ARCHITECTURE MATCHES "x86" AND VCPKG_CMAKE_SYSTEM_NAME STREQUAL "Linux")
+        set(EXTRA_CFLAGS "CFLAGS=-m32")
+        set(EXTRA_HOST "--host=i686-linux-gnueabi")
+    elseif(VCPKG_TARGET_ARCHITECTURE MATCHES "x64" AND VCPKG_CMAKE_SYSTEM_NAME STREQUAL "Linux")
+        set(EXTRA_CFLAGS "CFLAGS=-m64")
+    endif()
+
+    ################
     # Debug build
     ################
     message(STATUS "Configuring ${TARGET_TRIPLET}-dbg")
     vcpkg_execute_required_process(
-        COMMAND "${SOURCE_PATH}/configure" --prefix=${SOURCE_PATH}/build/debug --enable-debug=yes --enable-static=yes --disable-dependency-tracking --with-default-audio=coreaudio --with-module-suffix=.so
+        COMMAND "${SOURCE_PATH}/configure" --prefix=${SOURCE_PATH}/build/debug --enable-debug=yes --enable-static=yes --disable-dependency-tracking --with-default-audio=coreaudio --with-module-suffix=.so PKG_CONFIG_LIBDIR=${CURRENT_INSTALLED_DIR}/lib ${EXTRA_HOST} ${EXTRA_CFLAGS}
         WORKING_DIRECTORY ${SOURCE_PATH}
         LOGNAME config-${TARGET_TRIPLET}-dbg
     )
@@ -116,7 +126,7 @@ elseif(VCPKG_CMAKE_SYSTEM_NAME STREQUAL "Darwin" OR VCPKG_CMAKE_SYSTEM_NAME STRE
         LOGNAME config-${TARGET_TRIPLET}-dbg
     )
     vcpkg_execute_required_process(
-        COMMAND "${SOURCE_PATH}/configure" --prefix=${SOURCE_PATH}/build/release --enable-static=yes --disable-dependency-tracking --with-default-audio=coreaudio --with-module-suffix=.so
+        COMMAND "${SOURCE_PATH}/configure" --prefix=${SOURCE_PATH}/build/release --enable-static=yes --disable-dependency-tracking --with-default-audio=coreaudio --with-module-suffix=.so PKG_CONFIG_LIBDIR=${CURRENT_INSTALLED_DIR}/lib ${EXTRA_HOST} ${EXTRA_CFLAGS}
         WORKING_DIRECTORY ${SOURCE_PATH}
         LOGNAME config-${TARGET_TRIPLET}-rel
     )
