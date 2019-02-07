@@ -1,0 +1,6 @@
+#ifndef LIBUDIS86_H_
+#define LIBUDIS86_H_
+
+#define PACKAGE_STRING "libudis86 @PROJECT_VERSION@"
+
+#endif

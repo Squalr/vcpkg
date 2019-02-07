@@ -1,7 +1,8 @@
 cmake_minimum_required (VERSION 3.9)
 
-project (udis86)
+project (udis86 VERSION 2018.01.28 LANGUAGES C)
 
+configure_file(${PROJECT_SOURCE_DIR}/config.h.in ${CMAKE_BINARY_DIR}/config.h)
 
 set(
   lib_sources
@@ -24,7 +25,7 @@ set(lib_headers
 
 set(cli_srcs  udcli/udcli.c)
 
-include_directories(.)
+include_directories(. ${CMAKE_BINARY_DIR})
 
 add_library(libudis86 ${lib_sources})
 

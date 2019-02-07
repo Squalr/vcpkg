@@ -9,12 +9,13 @@ vcpkg_from_github(
 )
 
 file(COPY ${CMAKE_CURRENT_LIST_DIR}/CMakeLists.txt DESTINATION ${SOURCE_PATH})
+file(COPY ${CMAKE_CURRENT_LIST_DIR}/config.h.in DESTINATION ${SOURCE_PATH})
 
 vcpkg_find_acquire_program(PYTHON2)
 
 vcpkg_execute_required_process(
     COMMAND ${PYTHON2} ${SOURCE_PATH}/scripts/ud_itab.py  ${SOURCE_PATH}/docs/x86/optable.xml ${SOURCE_PATH}/libudis86/
-    WORKING_DIRECTORY SOURCE_PATH
+    WORKING_DIRECTORY ${SOURCE_PATH}
     LOGNAME python-${TARGET_TRIPLET}-generate-sources
 )
 
