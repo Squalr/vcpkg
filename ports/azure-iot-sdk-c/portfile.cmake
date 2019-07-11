@@ -2,16 +2,28 @@ include(vcpkg_common_functions)
 
 vcpkg_check_linkage(ONLY_STATIC_LIBRARY)
 
-vcpkg_from_github(
-    OUT_SOURCE_PATH SOURCE_PATH
-    REPO Azure/azure-iot-sdk-c
-    REF acff8b1677150cb165a7b111745144cf8fab76cc
-    SHA512 7e7e0679d48e76539a607a593b1c9ccc57eeb4f8bf33fb49051ad99203d1568f0ac2a38fe32ba0b3670cea32a2318e8c135c709ba5712f95cd8005ff21572e28
-    HEAD_REF master
-    PATCHES improve-external-deps.patch
-)
+if("public-preview" IN_LIST FEATURES)
+    vcpkg_from_github(
+        OUT_SOURCE_PATH SOURCE_PATH
+        REPO Azure/azure-iot-sdk-c
+        REF f3f9538960d9b29033e52522dd63e985ba970504
+        SHA512 f8ce98d62425da4bec1c9e99b7b662a615d90a9407e03f7ce31a56fb8848f6bda1a39156bbabf351383e490dc3438d842136220dcf08efb1560e21d9ac76a0ba
+        HEAD_REF public-preview
+        PATCHES improve-external-deps.patch
+    )
+else()
+    vcpkg_from_github(
+        OUT_SOURCE_PATH SOURCE_PATH
+        REPO Azure/azure-iot-sdk-c
+        REF b03cc5e0afb647934e45d4530d3e993476db3d3e
+        SHA512 7428c625dbacfd9ab612d5bbfad3c079074cd3834fe84a42db88e747aab2615140c0ca3035adc36b29ed8cf4bf487360522215ce03cee3e26254af925a68384a
+        HEAD_REF master
+        PATCHES improve-external-deps.patch
+    )
+endif()
 
 file(COPY ${CURRENT_INSTALLED_DIR}/share/azure-c-shared-utility/azure_iot_build_rules.cmake DESTINATION ${SOURCE_PATH}/deps/azure-c-shared-utility/configs/)
+file(COPY ${SOURCE_PATH}/configs/azure_iot_sdksFunctions.cmake DESTINATION ${CURRENT_PACKAGES_DIR}/share/cmake/azure_iot_sdks/)
 
 vcpkg_configure_cmake(
     SOURCE_PATH ${SOURCE_PATH}
@@ -21,6 +33,7 @@ vcpkg_configure_cmake(
         -Duse_installed_dependencies=ON
         -Duse_default_uuid=ON
         -Dbuild_as_dynamic=OFF
+        -Duse_edge_modules=ON
 )
 
 vcpkg_install_cmake()
@@ -32,3 +45,4 @@ file(REMOVE_RECURSE ${CURRENT_PACKAGES_DIR}/debug/include ${CURRENT_PACKAGES_DIR
 configure_file(${SOURCE_PATH}/LICENSE ${CURRENT_PACKAGES_DIR}/share/azure-iot-sdk-c/copyright COPYONLY)
 
 vcpkg_copy_pdbs()
+

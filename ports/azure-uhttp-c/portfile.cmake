@@ -2,13 +2,23 @@ include(vcpkg_common_functions)
 
 vcpkg_check_linkage(ONLY_STATIC_LIBRARY)
 
-vcpkg_from_github(
-    OUT_SOURCE_PATH SOURCE_PATH
-    REPO Azure/azure-uhttp-c
-    REF ed7d104c4ab96aaa68e429066953874f12be70eb
-    SHA512 512f8fd46dbc40ff79ffdbc2ea881a29aaa72db4c36f16f96f30a224220183e295d8e39a4965d788f92f4976fa6d37b197c04b32bbd187d456d5c5d516b95c9f
-    HEAD_REF master
-)
+if("public-preview" IN_LIST FEATURES)
+    vcpkg_from_github(
+        OUT_SOURCE_PATH SOURCE_PATH
+        REPO Azure/azure-uhttp-c
+        REF b8976adff02e543fc00e7db59eae9ce78dd014fe
+        SHA512 65ddccc07831309c4f3f8546bb1a45a6eff84674013311a15c99389d4fc33eaf2ef3da6c7c8e4bb03d32955d12c978190e7badb597379a9fefda4ebcf18827ec
+        HEAD_REF master
+    )
+else()
+    vcpkg_from_github(
+        OUT_SOURCE_PATH SOURCE_PATH
+        REPO Azure/azure-uhttp-c
+        REF b8976adff02e543fc00e7db59eae9ce78dd014fe
+        SHA512 65ddccc07831309c4f3f8546bb1a45a6eff84674013311a15c99389d4fc33eaf2ef3da6c7c8e4bb03d32955d12c978190e7badb597379a9fefda4ebcf18827ec
+        HEAD_REF master
+    )
+endif()
 
 file(COPY ${CURRENT_INSTALLED_DIR}/share/azure-c-shared-utility/azure_iot_build_rules.cmake DESTINATION ${SOURCE_PATH}/deps/c-utility/configs/)
 
@@ -31,3 +41,4 @@ file(REMOVE_RECURSE ${CURRENT_PACKAGES_DIR}/debug/include ${CURRENT_PACKAGES_DIR
 configure_file(${SOURCE_PATH}/LICENSE ${CURRENT_PACKAGES_DIR}/share/azure-uhttp-c/copyright COPYONLY)
 
 vcpkg_copy_pdbs()
+
