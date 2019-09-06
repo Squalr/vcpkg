@@ -23,32 +23,53 @@ endif()
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO slembcke/Chipmunk2D
-    REF Chipmunk-7.0.1
-    SHA512 33b5afa56adfe693e5115c9b73fa65a51ccbc20a22b23bfaf58bf7e8ff9b2af4c06d4af89ca5958a2d6c5c20c757c7b834593589289325d480d90e9eff1909d7
+    REF 87340c216bf97554dc552371bbdecf283f7c540e
+    SHA512 9094017755e9c140aa5bf8a1b5502077ae4fb2b0a3e12f1114e86d8591a6188f89822ecc578a2b5e95f61c555018f1b3273fe50e833fe2daf30e94b180a3d07c
     HEAD_REF master
-    PATCHES cocos2d.patch
 )
 
-if(VCPKG_LIBRARY_LINKAGE STREQUAL static)
-    set(LIBRARY_OPTIONS -DBUILD_SHARED=OFF -DBUILD_STATIC=ON)
+vcpkg_build_msbuild(
+    PROJECT_PATH ${SOURCE_PATH}/msvc/VS2015/chipmunk/chipmunk.vcxproj
+    RELEASE_CONFIGURATION "Release${CHIPMUNK_CONFIGURATION_SUFFIX}"
+    DEBUG_CONFIGURATION "Debug${CHIPMUNK_CONFIGURATION_SUFFIX}"
+)
+
+message(STATUS "Installing")
+if(VCPKG_LIBRARY_LINKAGE STREQUAL "dynamic")
+    file(INSTALL
+        "${SOURCE_PATH}/msvc/VS2015/chipmunk/${CHIPMUNK_ARCH}/Debug${CHIPMUNK_CONFIGURATION_SUFFIX}/chipmunk.dll"
+        "${SOURCE_PATH}/msvc/VS2015/chipmunk/${CHIPMUNK_ARCH}/Debug${CHIPMUNK_CONFIGURATION_SUFFIX}/chipmunk.pdb"
+        DESTINATION ${CURRENT_PACKAGES_DIR}/debug/bin
+    )
+    file(INSTALL
+        "${SOURCE_PATH}/msvc/VS2015/chipmunk/${CHIPMUNK_ARCH}/Release${CHIPMUNK_CONFIGURATION_SUFFIX}/chipmunk.dll"
+        "${SOURCE_PATH}/msvc/VS2015/chipmunk/${CHIPMUNK_ARCH}/Release${CHIPMUNK_CONFIGURATION_SUFFIX}/chipmunk.pdb"
+        DESTINATION ${CURRENT_PACKAGES_DIR}/bin
+    )
 else()
-    set(LIBRARY_OPTIONS -DBUILD_SHARED=ON -DBUILD_STATIC=OFF)
+    file(INSTALL
+        "${SOURCE_PATH}/msvc/VS2015/chipmunk/${CHIPMUNK_ARCH}/Release${CHIPMUNK_CONFIGURATION_SUFFIX}/chipmunk.pdb"
+        DESTINATION ${CURRENT_PACKAGES_DIR}/debug/lib
+    )
+    file(INSTALL
+        "${SOURCE_PATH}/msvc/VS2015/chipmunk/${CHIPMUNK_ARCH}/Release${CHIPMUNK_CONFIGURATION_SUFFIX}/chipmunk.pdb"
+        DESTINATION ${CURRENT_PACKAGES_DIR}/lib
+    )
 endif()
 
-vcpkg_configure_cmake(
-    SOURCE_PATH ${SOURCE_PATH}
-    PREFER_NINJA
-    OPTIONS -DBUILD_DEMOS=OFF ${LIBRARY_OPTIONS}
+file(INSTALL
+    "${SOURCE_PATH}/msvc/VS2015/chipmunk/${CHIPMUNK_ARCH}/Debug${CHIPMUNK_CONFIGURATION_SUFFIX}/chipmunk.lib"
+    DESTINATION ${CURRENT_PACKAGES_DIR}/debug/lib
+)
+file(INSTALL
+    "${SOURCE_PATH}/msvc/VS2015/chipmunk/${CHIPMUNK_ARCH}/Release${CHIPMUNK_CONFIGURATION_SUFFIX}/chipmunk.lib"
+    DESTINATION ${CURRENT_PACKAGES_DIR}/lib
+)
+file(INSTALL
+    ${SOURCE_PATH}/include/chipmunk
+    DESTINATION ${CURRENT_PACKAGES_DIR}/include
 )
 
-vcpkg_install_cmake()
-vcpkg_copy_pdbs()
-
-# Cleanup
-file(REMOVE_RECURSE ${CURRENT_PACKAGES_DIR}/debug/include)
-
-# Handle copyright
 file(INSTALL ${SOURCE_PATH}/LICENSE.txt DESTINATION ${CURRENT_PACKAGES_DIR}/share/chipmunk RENAME copyright)
-
 
 message(STATUS "Installing done")

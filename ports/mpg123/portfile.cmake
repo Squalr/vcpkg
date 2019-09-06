@@ -2,13 +2,20 @@ include(vcpkg_common_functions)
 
 set(MPG123_VERSION 1.25.8)
 set(MPG123_HASH f226317dddb07841a13753603fa13c0a867605a5a051626cb30d45cfba266d3d4296f5b8254f65b403bb5eef6addce1784ae8829b671a746854785cda1bad203)
-set(SOURCE_PATH ${CURRENT_BUILDTREES_DIR}/src/mpg123-${MPG123_VERSION})
 
 #architecture detection
 if(VCPKG_TARGET_ARCHITECTURE STREQUAL "x86")
    set(MPG123_ARCH Win32)
+   set(MPG123_CONFIGURATION _x86)
 elseif(VCPKG_TARGET_ARCHITECTURE STREQUAL "x64")
    set(MPG123_ARCH x64)
+   set(MPG123_CONFIGURATION _x86)
+elseif(VCPKG_TARGET_ARCHITECTURE STREQUAL "arm")
+   set(MPG123_ARCH ARM)
+   set(MPG123_CONFIGURATION _Generic)
+elseif(VCPKG_TARGET_ARCHITECTURE STREQUAL "arm64")
+   set(MPG123_ARCH ARM64)
+   set(MPG123_CONFIGURATION _Generic)
 else()
    message(FATAL_ERROR "unsupported architecture")
 endif()
@@ -23,27 +30,25 @@ vcpkg_download_distfile(ARCHIVE
     FILENAME "mpg123-${MPG123_VERSION}.tar.bz2"
     SHA512 ${MPG123_HASH}
 )
-vcpkg_extract_source_archive(${ARCHIVE})
+
+vcpkg_extract_source_archive_ex(
+    ARCHIVE ${ARCHIVE}
+    OUT_SOURCE_PATH SOURCE_PATH
+    PATCHES
+        0001-fix-crt-linking.patch
+        0002-fix-x86-build.patch
+        0003-add-arm-configs.patch
+)
 
 vcpkg_find_acquire_program(YASM)
 get_filename_component(YASM_EXE_PATH ${YASM} DIRECTORY)
 set(ENV{PATH} "$ENV{PATH};${YASM_EXE_PATH}")
 
-if(NOT VCPKG_CMAKE_SYSTEM_NAME OR VCPKG_CMAKE_SYSTEM_NAME STREQUAL "WindowsStore")
-    set(PATCHES_TO_APPLY "${CURRENT_PORT_DIR}/0002-fix-x86-build.patch")
-    if(VCPKG_CRT_LINKAGE STREQUAL static)
-        set(PATCHES_TO_APPLY "${CURRENT_PORT_DIR}/0001-fix-crt-linking.patch" ${PATCHES_TO_APPLY})
-    endif()
-
-    vcpkg_apply_patches(
-        SOURCE_PATH ${SOURCE_PATH}
-        PATCHES ${PATCHES_TO_APPLY}
-    )
-
+if(VCPKG_TARGET_IS_WINDOWS)
     vcpkg_build_msbuild(
         PROJECT_PATH ${SOURCE_PATH}/ports/MSVC++/2015/win32/libmpg123/libmpg123.vcxproj
-        RELEASE_CONFIGURATION Release_x86${MPG123_CONFIGURATION_SUFFIX}
-        DEBUG_CONFIGURATION Debug_x86${MPG123_CONFIGURATION_SUFFIX}
+        RELEASE_CONFIGURATION Release${MPG123_CONFIGURATION}${MPG123_CONFIGURATION_SUFFIX}
+        DEBUG_CONFIGURATION Debug${MPG123_CONFIGURATION}${MPG123_CONFIGURATION_SUFFIX}
     )
 
     message(STATUS "Installing")
@@ -88,21 +93,11 @@ elseif(VCPKG_CMAKE_SYSTEM_NAME STREQUAL "Darwin" OR VCPKG_CMAKE_SYSTEM_NAME STRE
     file(REMOVE_RECURSE ${SOURCE_PATH}/build/release)
 
     ################
-    # EVIL HACKERY
-    ################
-    if(VCPKG_TARGET_ARCHITECTURE MATCHES "x86" AND VCPKG_CMAKE_SYSTEM_NAME STREQUAL "Linux")
-        set(EXTRA_CFLAGS "CFLAGS=-m32")
-        set(EXTRA_HOST "--host=i686-linux-gnueabi")
-    elseif(VCPKG_TARGET_ARCHITECTURE MATCHES "x64" AND VCPKG_CMAKE_SYSTEM_NAME STREQUAL "Linux")
-        set(EXTRA_CFLAGS "CFLAGS=-m64")
-    endif()
-
-    ################
     # Debug build
     ################
     message(STATUS "Configuring ${TARGET_TRIPLET}-dbg")
     vcpkg_execute_required_process(
-        COMMAND "${SOURCE_PATH}/configure" --prefix=${SOURCE_PATH}/build/debug --enable-debug=yes --enable-static=yes --disable-dependency-tracking --with-default-audio=coreaudio --with-module-suffix=.so PKG_CONFIG_LIBDIR=${CURRENT_INSTALLED_DIR}/lib ${EXTRA_HOST} ${EXTRA_CFLAGS}
+        COMMAND "${SOURCE_PATH}/configure" --prefix=${SOURCE_PATH}/build/debug --enable-debug=yes --enable-static=yes --disable-dependency-tracking --with-default-audio=coreaudio --with-module-suffix=.so
         WORKING_DIRECTORY ${SOURCE_PATH}
         LOGNAME config-${TARGET_TRIPLET}-dbg
     )
@@ -126,7 +121,7 @@ elseif(VCPKG_CMAKE_SYSTEM_NAME STREQUAL "Darwin" OR VCPKG_CMAKE_SYSTEM_NAME STRE
         LOGNAME config-${TARGET_TRIPLET}-dbg
     )
     vcpkg_execute_required_process(
-        COMMAND "${SOURCE_PATH}/configure" --prefix=${SOURCE_PATH}/build/release --enable-static=yes --disable-dependency-tracking --with-default-audio=coreaudio --with-module-suffix=.so PKG_CONFIG_LIBDIR=${CURRENT_INSTALLED_DIR}/lib ${EXTRA_HOST} ${EXTRA_CFLAGS}
+        COMMAND "${SOURCE_PATH}/configure" --prefix=${SOURCE_PATH}/build/release --enable-static=yes --disable-dependency-tracking --with-default-audio=coreaudio --with-module-suffix=.so
         WORKING_DIRECTORY ${SOURCE_PATH}
         LOGNAME config-${TARGET_TRIPLET}-rel
     )
